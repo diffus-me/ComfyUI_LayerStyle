@@ -5,6 +5,8 @@ import numpy as np
 import folder_paths
 import node_helpers
 
+import execution_context
+
 class LS_LoadImagesFromPath:
     @classmethod
     def INPUT_TYPES(s):
@@ -16,6 +18,9 @@ class LS_LoadImagesFromPath:
                 "image_load_cap": ("INT", {"default": 0, "min": 0, "max": 999999, "step": 1}),
                 "select_every_nth": ("INT", {"default": 1, "min": 1, "max": 999999, "step": 1}),
             },
+            "hidden": {
+                "context": "EXECUTION_CONTEXT",
+            }
         }
 
     RETURN_TYPES = ("IMAGE", "MASK", "STRING", "INT")
@@ -25,13 +30,13 @@ class LS_LoadImagesFromPath:
     OUTPUT_IS_LIST = (True, True, True, False)
 
 
-    def ls_load_images(self, path: str, image_load_cap: int, select_every_nth: int):
+    def ls_load_images(self, path: str, image_load_cap: int, select_every_nth: int, context: execution_context.ExecutionContext):
         load_images = []
         load_masks = []
         load_file_names = []
         load_frame_count = 0
 
-
+        path = os.path.join(folder_paths.get_input_directory(user_hash=context.user_hash).path)
         if os.path.isdir(path):
             input_dir = os.path.normpath(path)
             files = [
@@ -45,8 +50,7 @@ class LS_LoadImagesFromPath:
                 if i % select_every_nth != 0:
                     continue
 
-                image_file = files[i]
-                image_path = folder_paths.get_annotated_filepath(image_file)
+                image_path = files[i]
                 img = node_helpers.pillow(Image.open, image_path)
                 output_images = []
                 output_masks = []
@@ -98,13 +102,13 @@ class LS_LoadImagesFromPath:
             return (load_images, load_masks, load_file_names, load_frame_count)
 
         else:
-            raise Exception("directory is not valid: " + directory)
+            raise Exception("directory is not valid: " + str(path))
 
 
 NODE_CLASS_MAPPINGS = {
-    "LayerUtility: LoadImagesFromPath": LS_LoadImagesFromPath,
+    # "LayerUtility: LoadImagesFromPath": LS_LoadImagesFromPath,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "LayerUtility: LoadImagesFromPath": "LayerUtility: Load Images From Path",
+    # "LayerUtility: LoadImagesFromPath": "LayerUtility: Load Images From Path",
 }

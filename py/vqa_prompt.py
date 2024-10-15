@@ -7,7 +7,7 @@ import folder_paths
 
 from .imagefunc import log, tensor2pil
 
-vqa_model_path = os.path.join(folder_paths.models_dir, 'VQA')
+vqa_model_path = os.path.join(folder_paths.models_dir, 'LayerStyle', 'VQA')
 
 vqa_model_repos = {
     "blip-vqa-base": "Salesforce/blip-vqa-base",

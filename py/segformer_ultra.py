@@ -40,7 +40,7 @@ def get_segmentation_from_model(tensor_image, segformer_model):
 # 切割服装
 def get_segmentation(tensor_image, model_name='segformer_b2_clothes'):
     cloth = tensor2pil(tensor_image)
-    model_folder_path = os.path.join(folder_paths.models_dir, model_name)
+    model_folder_path = os.path.join(folder_paths.models_dir, "LayerStyle",  model_name)
     try:
         model_folder_path = os.path.normpath(folder_paths.folder_names_and_paths[model_name][0][0])
     except:
@@ -816,7 +816,7 @@ class LS_LoadSegformerModel:
 
     def load_segformer_model(self, model_name, device):
 
-        model_folder_path = os.path.join(folder_paths.models_dir, model_name)
+        model_folder_path = os.path.join(folder_paths.models_dir, "LayerStyle", model_name)
         try:
             model_folder_path = os.path.normpath(folder_paths.folder_names_and_paths[model_name][0][0])
         except:

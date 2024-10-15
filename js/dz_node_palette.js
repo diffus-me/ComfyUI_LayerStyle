@@ -2,7 +2,7 @@ import { app } from "../../scripts/app.js";
 
 
 app.registerExtension({
-    name: "ColorOverlay",
+    name: "LayerStyleColorOverlay",
     async nodeCreated(node) {
         // 判断是否为layer节点
         if(!node.comfyClass.startsWith("Layer")) {

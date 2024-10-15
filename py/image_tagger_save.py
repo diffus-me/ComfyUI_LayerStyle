@@ -9,18 +9,18 @@ import numpy as np
 import folder_paths
 from .imagefunc import log, generate_random_name, remove_empty_lines
 
+import execution_context
 
 
 class LSImageTaggerSave:
     def __init__(self):
-        self.output_dir = folder_paths.get_output_directory()
         self.type = "output"
         self.prefix_append = ""
         self.compress_level = 4
         self.NODE_NAME = 'ImageTaggerSave'
 
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s, context: execution_context.ExecutionContext):
         return {"required":
                     {"image": ("IMAGE", ),
                      "tag_text": ("STRING", {"default": "", "forceInput":True}),
@@ -31,7 +31,7 @@ class LSImageTaggerSave:
                      "quality": ("INT", {"default": 80, "min": 10, "max": 100, "step": 1}),
                      "preview": ("BOOLEAN", {"default": True}),
                      },
-                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO", "context": "EXECUTION_CONTEXT"},
                 }
 
     RETURN_TYPES = ()
@@ -41,7 +41,8 @@ class LSImageTaggerSave:
 
     def image_tagger_save(self, image, tag_text, custom_path, filename_prefix, timestamp, format, quality,
                            preview,
-                           prompt=None, extra_pnginfo=None):
+                           prompt=None, extra_pnginfo=None,
+                           context: execution_context.ExecutionContext=None):
 
         now = datetime.datetime.now()
         custom_path = custom_path.replace("%date", now.strftime("%Y-%m-%d"))
@@ -49,10 +50,11 @@ class LSImageTaggerSave:
         filename_prefix = filename_prefix.replace("%date", now.strftime("%Y-%m-%d"))
         filename_prefix = filename_prefix.replace("%time", now.strftime("%H-%M-%S"))
         filename_prefix += self.prefix_append
-        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, image[0].shape[1], image[0].shape[0])
+        output_dir = folder_paths.get_output_directory(context.user_hash)
+        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, output_dir, image[0].shape[1], image[0].shape[0])
         results = list()
         temp_sub_dir = generate_random_name('_savepreview_', '_temp', 16)
-        temp_dir = os.path.join(folder_paths.get_temp_directory(), temp_sub_dir)
+        temp_dir = os.path.join(folder_paths.get_temp_directory(context), temp_sub_dir)
         metadata = None
         i = 255. * image[0].cpu().numpy()
         img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
@@ -74,7 +76,7 @@ class LSImageTaggerSave:
                         message_type='warning')
                     raise FileNotFoundError(f"cannot create custom_path {custom_path}, {e}")
         else:
-            custom_path = folder_paths.get_output_directory()
+            custom_path = folder_paths.get_output_directory(user_hash=context.user_hash)
 
         full_output_folder = os.path.normpath(custom_path)
         # save preview image to temp_dir
@@ -121,13 +123,15 @@ class LSImageTaggerSave:
                 results.append({
                     "filename": f"{file}.{format}",
                     "subfolder": subfolder,
-                    "type": self.type
+                    "type": self.type,
+                    "user_hash": context.user_hash,
                 })
             else:
                 results.append({
                     "filename": preview_filename,
                     "subfolder": temp_sub_dir,
-                    "type": "temp"
+                    "type": "temp",
+                    "user_hash": context.user_hash,
                 })
 
         counter += 1
@@ -136,7 +140,7 @@ class LSImageTaggerSave:
 
 class LSImageTaggerSave_V2:
     def __init__(self):
-        self.output_dir = folder_paths.get_output_directory()
+        # self.output_dir = folder_paths.get_output_directory(user_hash=context.user_hash)
         self.type = "output"
         self.prefix_append = ""
         self.compress_level = 4
@@ -156,7 +160,7 @@ class LSImageTaggerSave_V2:
                      "quality": ("INT", {"default": 80, "min": 10, "max": 100, "step": 1}),
                      "preview": ("BOOLEAN", {"default": True}),
                      },
-                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO", "context": "EXECUTION_CONTEXT"},
                 }
 
     RETURN_TYPES = ()
@@ -167,7 +171,7 @@ class LSImageTaggerSave_V2:
     def image_tagger_save_v2(self, image, tag_text, custom_path, custom_filename, remove_custom_filename_ext,
                              filename_prefix, timestamp, format, quality,
                            preview,
-                           prompt=None, extra_pnginfo=None):
+                           prompt=None, extra_pnginfo=None, context: execution_context.ExecutionContext=None):
 
         now = datetime.datetime.now()
         custom_path = custom_path.replace("%date", now.strftime("%Y-%m-%d"))
@@ -176,7 +180,8 @@ class LSImageTaggerSave_V2:
         filename_prefix = filename_prefix.replace("%time", now.strftime("%H-%M-%S"))
         filename_prefix += self.prefix_append
 
-        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, image[0].shape[1], image[0].shape[0])
+        output_dir = folder_paths.get_output_directory(context.user_hash)
+        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, output_dir, image[0].shape[1], image[0].shape[0])
 
         if custom_filename != "":
             if remove_custom_filename_ext:
@@ -199,7 +204,7 @@ class LSImageTaggerSave_V2:
 
         results = list()
         temp_sub_dir = generate_random_name('_savepreview_', '_temp', 16)
-        temp_dir = os.path.join(folder_paths.get_temp_directory(), temp_sub_dir)
+        temp_dir = os.path.join(folder_paths.get_temp_directory(user_hash=context.user_hash), temp_sub_dir)
         metadata = None
         i = 255. * image[0].cpu().numpy()
         img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
@@ -214,7 +219,7 @@ class LSImageTaggerSave_V2:
                         message_type='warning')
                     raise FileNotFoundError(f"cannot create custom_path {custom_path}, {e}")
         else:
-            custom_path = folder_paths.get_output_directory()
+            custom_path = folder_paths.get_output_directory(user_hash=context.user_hash)
 
         full_output_folder = os.path.normpath(custom_path)
         # save preview image to temp_dir
