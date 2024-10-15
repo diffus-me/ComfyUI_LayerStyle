@@ -9,6 +9,9 @@ by chflame https://github.com/chflame163
 
 import os
 import sys
+
+import execution_context
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import pickle
 import copy
@@ -1326,12 +1329,12 @@ def watermark_image_size(image:Image) -> int:
     size = int(math.sqrt(image.width * image.height * 0.015625) * 0.9)
     return size
 
-def add_invisibal_watermark(image:Image, watermark_image:Image) -> Image:
+def add_invisibal_watermark(context: execution_context.ExecutionContext, image:Image, watermark_image:Image) -> Image:
     """
     Adds an invisible watermark to an image.
     """
     orig_image_mode = image.mode
-    temp_dir = os.path.join(folder_paths.get_temp_directory(), generate_random_name('_watermark_', '_temp', 16))
+    temp_dir = os.path.join(folder_paths.get_temp_directory(context.user_hash), generate_random_name('_watermark_', '_temp', 16))
     if os.path.isdir(temp_dir):
         shutil.rmtree(temp_dir)
     image_dir = os.path.join(temp_dir, 'image')
@@ -1370,8 +1373,8 @@ def add_invisibal_watermark(image:Image, watermark_image:Image) -> Image:
 
     return Image.open(output_image).convert(orig_image_mode)
 
-def decode_watermark(image:Image, watermark_image_size:int=94) -> Image:
-    temp_dir = os.path.join(folder_paths.get_temp_directory(), generate_random_name('_watermark_', '_temp', 16))
+def decode_watermark(context: execution_context.ExecutionContext, image:Image, watermark_image_size:int=94) -> Image:
+    temp_dir = os.path.join(folder_paths.get_temp_directory(context.user_hash), generate_random_name('_watermark_', '_temp', 16))
     if os.path.isdir(temp_dir):
         shutil.rmtree(temp_dir)
     image_dir = os.path.join(temp_dir, 'decode_image')

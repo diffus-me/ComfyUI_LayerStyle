@@ -27,9 +27,9 @@ class FileManager:
             self.thumbnail_directory.mkdir(parents=True)
 
         # fmt: off
-        self.app.add_api_route("/api/v1/medias", self.api_medias, methods=["GET"], response_model=List[MediasResponse])
-        self.app.add_api_route("/api/v1/media_file", self.api_media_file, methods=["GET"])
-        self.app.add_api_route("/api/v1/media_thumbnail_file", self.api_media_thumbnail_file, methods=["GET"])
+        # self.app.add_api_route("/api/v1/medias", self.api_medias, methods=["GET"], response_model=List[MediasResponse])
+        # self.app.add_api_route("/api/v1/media_file", self.api_media_file, methods=["GET"])
+        # self.app.add_api_route("/api/v1/media_thumbnail_file", self.api_media_thumbnail_file, methods=["GET"])
         # fmt: on
 
     def api_medias(self, tab: MediaTab) -> List[MediasResponse]:

@@ -34,6 +34,9 @@ class SegmentAnythingUltraV2:
                 "max_megapixels": ("FLOAT", {"default": 2.0, "min": 1, "max": 999, "step": 0.1}),
             },
             "optional": {
+            },
+            "hidden": {
+                "context": "EXECUTION_CONTEXT"
             }
         }
 
@@ -45,7 +48,8 @@ class SegmentAnythingUltraV2:
     def segment_anything_ultra_v2(self, image, sam_model, grounding_dino_model, threshold,
                                   detail_method, detail_erode, detail_dilate,
                                   black_point, white_point, process_detail, prompt,
-                                  device, max_megapixels
+                                  device, max_megapixels,
+                                  context: execution_context.ExecutionContext
                                   ):
         global SAM_MODEL
         global DINO_MODEL
@@ -58,10 +62,10 @@ class SegmentAnythingUltraV2:
             local_files_only = False
 
         if previous_sam_model != sam_model:
-            SAM_MODEL = load_sam_model(sam_model)
+            SAM_MODEL = load_sam_model(context, sam_model)
             previous_sam_model = sam_model
         if previous_dino_model != grounding_dino_model:
-            DINO_MODEL = load_groundingdino_model(grounding_dino_model)
+            DINO_MODEL = load_groundingdino_model(context, grounding_dino_model)
             previous_dino_model = grounding_dino_model
         ret_images = []
         ret_masks = []

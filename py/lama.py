@@ -26,6 +26,9 @@ class LaMa:
                 "mask_blur": ("INT", {"default": 8, "min": -255, "max": 255, "step": 1}),
             },
             "optional": {
+            },
+            "hidden": {
+                "user_hash": "USER_HASH"
             }
         }
 
@@ -34,7 +37,7 @@ class LaMa:
     FUNCTION = 'lama'
     CATEGORY = '😺dzNodes/LayerUtility'
 
-    def lama(self, image, mask, lama_model, device, invert_mask, mask_grow, mask_blur):
+    def lama(self, image, mask, lama_model, device, invert_mask, mask_grow, mask_blur, user_hash):
         log("lama copy")
         l_images = []
         l_masks = []
@@ -65,18 +68,18 @@ class LaMa:
                 _mask = l_masks[i] if i < len(l_masks) else l_masks[-1]
                 if mask_grow or mask_blur:
                     _mask = tensor2pil(expand_mask(image2mask(_mask), mask_grow, mask_blur))
-                
+
                 ret_image = pixel_spread(tensor2pil(_image).convert('RGB'), ImageChops.invert(_mask.convert('RGB')))
                 ret_images.append(pil2tensor(ret_image))
         else:
-            temp_dir = os.path.join(folder_paths.get_temp_directory(), generate_random_name('_lama_', '_temp', 16))
+            temp_dir = os.path.join(folder_paths.get_temp_directory(user_hash), generate_random_name('_lama_', '_temp', 16))
             if os.path.isdir(temp_dir):
                 shutil.rmtree(temp_dir)
             image_dir = os.path.join(temp_dir, 'image')
             mask_dir = os.path.join(temp_dir, 'mask')
             result_dir = os.path.join(temp_dir, 'result')
             config_dir = os.path.join(temp_dir, 'config.json')
-            
+
             try:
                 os.makedirs(image_dir)
                 os.makedirs(mask_dir)

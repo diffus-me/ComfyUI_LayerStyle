@@ -2,13 +2,14 @@ import os.path
 import shutil
 from PIL.PngImagePlugin import PngInfo
 import datetime
+
+import execution_context
 from .imagefunc import *
 
 NODE_NAME = 'ImageTaggerSave'
 
 class LSImageTaggerSave:
-    def __init__(self):
-        self.output_dir = folder_paths.get_output_directory()
+    def __init__(self, context: execution_context.ExecutionContext):
         self.type = "output"
         self.prefix_append = ""
         self.compress_level = 4
@@ -25,7 +26,7 @@ class LSImageTaggerSave:
                      "quality": ("INT", {"default": 80, "min": 10, "max": 100, "step": 1}),
                      "preview": ("BOOLEAN", {"default": True}),
                      },
-                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO", "context": "EXECUTION_CONTEXT"},
                 }
 
     RETURN_TYPES = ()
@@ -35,7 +36,8 @@ class LSImageTaggerSave:
 
     def image_tagger_save(self, image, tag_text, custom_path, filename_prefix, timestamp, format, quality,
                            preview,
-                           prompt=None, extra_pnginfo=None):
+                           prompt=None, extra_pnginfo=None,
+                           context: execution_context.ExecutionContext=None):
 
         now = datetime.datetime.now()
         custom_path = custom_path.replace("%date", now.strftime("%Y-%m-%d"))
@@ -43,10 +45,11 @@ class LSImageTaggerSave:
         filename_prefix = filename_prefix.replace("%date", now.strftime("%Y-%m-%d"))
         filename_prefix = filename_prefix.replace("%time", now.strftime("%H-%M-%S"))
         filename_prefix += self.prefix_append
-        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, image[0].shape[1], image[0].shape[0])
+        output_dir = folder_paths.get_output_directory(context.user_hash)
+        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, output_dir, image[0].shape[1], image[0].shape[0])
         results = list()
         temp_sub_dir = generate_random_name('_savepreview_', '_temp', 16)
-        temp_dir = os.path.join(folder_paths.get_temp_directory(), temp_sub_dir)
+        temp_dir = os.path.join(folder_paths.get_temp_directory(context), temp_sub_dir)
         metadata = None
         i = 255. * image[0].cpu().numpy()
         img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))

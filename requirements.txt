@@ -19,9 +19,10 @@ typer_config
 fastapi
 rich
 google-generativeai
-diffusers
+diffusers>=0.26.1
 omegaconf
 tqdm
+transformers>=4.38.1
 kornia
 ultralytics>=8.2.0
 blend_modes

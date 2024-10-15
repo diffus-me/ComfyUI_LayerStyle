@@ -10,8 +10,13 @@ def get_state_dict(d):
 
 
 def load_state_dict(ckpt_path, location="cpu"):
-    _, extension = os.path.splitext(ckpt_path)
-    if extension.lower() == ".safetensors":
+    if hasattr(ckpt_path, 'is_safetensors') and hasattr(ckpt_path, 'filename'):
+        is_safetensors = ckpt_path.is_safetensors
+        ckpt_path = ckpt_path.filename
+    else:
+        is_safetensors = ckpt_path.lower().endswith(".safetensors")
+
+    if is_safetensors:
         import safetensors.torch
 
         state_dict = safetensors.torch.load_file(ckpt_path, device=location)

@@ -32,6 +32,9 @@ class ImageAutoCrop:
                 "sam_prompt": ("STRING", {"default": "subject"}),
             },
             "optional": {
+            },
+            "hidden": {
+                "context": "EXECUTION_CONTEXT"
             }
         }
 
@@ -42,7 +45,8 @@ class ImageAutoCrop:
 
     def image_auto_crop(self, image, detect, border_reserve, aspect_ratio, proportional_width, proportional_height,
                         background_color, ultra_detail_range, scale_to_longest_side, longest_side,
-                        matting_method, sam_model, grounding_dino_model, sam_threshold, sam_prompt
+                        matting_method, sam_model, grounding_dino_model, sam_threshold, sam_prompt,
+                        context: execution_context.ExecutionContext,
                         ):
 
         ret_images = []
@@ -77,8 +81,8 @@ class ImageAutoCrop:
                 _mask = input_masks[i]
             else:
                 if matting_method == 'SegmentAnything':
-                    sam_model = load_sam_model(sam_model)
-                    dino_model = load_groundingdino_model(grounding_dino_model)
+                    sam_model = load_sam_model(context, sam_model)
+                    dino_model = load_groundingdino_model(context, grounding_dino_model)
                     item = _image.convert('RGBA')
                     boxes = groundingdino_predict(dino_model, item, sam_prompt, sam_threshold)
                     (_, _mask) = sam_segment(sam_model, item, boxes)

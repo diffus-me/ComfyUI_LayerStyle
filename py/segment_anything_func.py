@@ -1,5 +1,8 @@
 import os
 import sys
+
+import execution_context
+
 sys.path.append(
     os.path.dirname(os.path.abspath(__file__))
 )
@@ -68,8 +71,8 @@ def get_bert_base_uncased_model_path():
 def list_sam_model():
     return list(sam_model_list.keys())
 
-def load_sam_model(model_name):
-    sam_checkpoint_path = get_local_filepath(
+def load_sam_model(context: execution_context.ExecutionContext, model_name):
+    sam_checkpoint_path = get_local_filepath( context,
         sam_model_list[model_name]["model_url"], sam_model_dir_name)
     model_file_name = os.path.basename(sam_checkpoint_path)
     model_type = model_file_name.split('.')[0]
@@ -82,12 +85,12 @@ def load_sam_model(model_name):
     sam.model_name = model_file_name
     return sam
 
-def get_local_filepath(url, dirname, local_file_name=None):
+def get_local_filepath(context: execution_context.ExecutionContext, url, dirname, local_file_name=None):
     if not local_file_name:
         parsed_url = urlparse(url)
         local_file_name = os.path.basename(parsed_url.path)
 
-    destination = folder_paths.get_full_path(dirname, local_file_name)
+    destination = folder_paths.get_full_path(context, dirname, local_file_name)
     if destination:
         logger.warn(f'using extra model: {destination}')
         return destination
@@ -102,12 +105,13 @@ def get_local_filepath(url, dirname, local_file_name=None):
         download_url_to_file(url, destination)
     return destination
 
-def load_groundingdino_model(model_name):
+def load_groundingdino_model(context: execution_context.ExecutionContext, model_name):
     from local_groundingdino.util.utils import clean_state_dict as local_groundingdino_clean_state_dict
     from local_groundingdino.util.slconfig import SLConfig as local_groundingdino_SLConfig
     from local_groundingdino.models import build_model as local_groundingdino_build_model
     dino_model_args = local_groundingdino_SLConfig.fromfile(
         get_local_filepath(
+            context,
             groundingdino_model_list[model_name]["config_url"],
             groundingdino_model_dir_name
         ),
@@ -119,6 +123,7 @@ def load_groundingdino_model(model_name):
     dino = local_groundingdino_build_model(dino_model_args)
     checkpoint = torch.load(
         get_local_filepath(
+            context,
             groundingdino_model_list[model_name]["model_url"],
             groundingdino_model_dir_name,
         ),

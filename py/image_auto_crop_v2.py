@@ -40,6 +40,9 @@ class ImageAutoCropV2:
             },
             "optional": {
                 "mask": ("MASK",),  #
+            },
+            "hidden": {
+                "context": "EXECUTION_CONTEXT"
             }
         }
 
@@ -54,6 +57,7 @@ class ImageAutoCropV2:
                         ultra_detail_range, matting_method,
                         sam_model, grounding_dino_model, sam_threshold, sam_prompt,
                         mask=None,
+                        context: execution_context.ExecutionContext = None,
                         ):
 
         ret_images = []
@@ -105,10 +109,10 @@ class ImageAutoCropV2:
             else:
                 if matting_method == 'SegmentAnything':
                     if previous_sam_model != sam_model:
-                        SAM_MODEL = load_sam_model(sam_model)
+                        SAM_MODEL = load_sam_model(context, sam_model)
                         previous_sam_model = sam_model
                     if previous_dino_model != grounding_dino_model:
-                        DINO_MODEL = load_groundingdino_model(grounding_dino_model)
+                        DINO_MODEL = load_groundingdino_model(context, grounding_dino_model)
                         previous_dino_model = grounding_dino_model
                     item = _image.convert('RGBA')
                     boxes = groundingdino_predict(DINO_MODEL, item, sam_prompt, sam_threshold)

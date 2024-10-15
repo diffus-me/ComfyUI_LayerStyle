@@ -26,6 +26,9 @@ class SegmentAnythingUltra:
                 "prompt": ("STRING", {"default": "subject"}),
             },
             "optional": {
+            },
+            "hidden": {
+                "context": "EXECUTION_CONTEXT"
             }
         }
 
@@ -36,11 +39,11 @@ class SegmentAnythingUltra:
 
     def segment_anything_ultra(self, image, sam_model, grounding_dino_model, threshold,
                                detail_range, black_point, white_point, process_detail,
-                               prompt, ):
+                               prompt, context: execution_context.ExecutionContext):
         global SAM_MODEL
         global DINO_MODEL
-        if SAM_MODEL is None: SAM_MODEL = load_sam_model(sam_model)
-        if DINO_MODEL is None: DINO_MODEL = load_groundingdino_model(grounding_dino_model)
+        if SAM_MODEL is None: SAM_MODEL = load_sam_model(context, sam_model)
+        if DINO_MODEL is None: DINO_MODEL = load_groundingdino_model(context, grounding_dino_model)
         ret_images = []
         ret_masks = []
 
